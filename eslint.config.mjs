@@ -18,6 +18,9 @@ const compat = new FlatCompat({
 });
 
 export default [
+    {
+        ignores: ["build/**", "dist/**", ".volumes/**", "src/database/dbml/**"],
+    },
     ...compat.extends(
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended"

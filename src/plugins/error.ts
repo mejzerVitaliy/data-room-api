@@ -1,12 +1,12 @@
 import fp from "fastify-plugin";
-import { FastifyInstance } from "fastify";
+import { FastifyError, FastifyInstance } from "fastify";
 import {
     INTERNAL_SERVER_ERROR_RESPONSE,
     INTERNAL_SERVER_ERROR_STATUS_CODE,
 } from "@/lib/constants/error.constant.js";
 
 const configureErrorHandler = async (fastify: FastifyInstance) => {
-    fastify.setErrorHandler((error, request, reply) => {
+    fastify.setErrorHandler<FastifyError>((error, request, reply) => {
         // Hide not predefined errors from the client and just log them.
         if (!("statusCode" in error)) {
             request.log.error(error, error.message);

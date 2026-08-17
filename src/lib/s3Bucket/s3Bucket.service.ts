@@ -6,12 +6,6 @@ import {
     SIGNED_URL_EXPIRES_IN_SECONDS,
 } from "./s3Bucket.constant.js";
 import {
-    DeleteFilePayload,
-    DeleteFolderPayload,
-    CreateUploadSignedUrlPayload,
-    CreateReadSignedUrlPayload,
-} from "./s3Bucket.type.js";
-import {
     S3Client,
     GetObjectCommand,
     PutObjectCommand,
@@ -19,9 +13,17 @@ import {
     DeleteObjectsCommand,
     ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
+import {
+    DeleteFilePayload,
+    DeleteFilesPayload,
+    DeleteFolderPayload,
+    CreateUploadSignedUrlPayload,
+    CreateReadSignedUrlPayload,
+} from "./s3Bucket.type.js";
 
 export type S3BucketService = {
     deleteFile: (payload: DeleteFilePayload) => Promise<string>;
+    deleteFiles: (payload: DeleteFilesPayload) => Promise<string[]>;
     deleteFolder: (payload: DeleteFolderPayload) => Promise<string>;
     createUploadSignedUrl: (
         payload: CreateUploadSignedUrlPayload
@@ -52,6 +54,33 @@ export const createS3BucketService = (
             );
 
             return key;
+        },
+
+        deleteFiles: async ({ keys }) => {
+            if (keys.length === 0) {
+                return keys;
+            }
+
+            const bucket = requireBucket();
+
+            const deleteResponse = await awsS3Client.send(
+                new DeleteObjectsCommand({
+                    Bucket: bucket,
+                    Delete: { Objects: keys.map((key) => ({ Key: key })) },
+                })
+            );
+
+            if (deleteResponse.Errors && deleteResponse.Errors.length > 0) {
+                const failedKeys = deleteResponse.Errors.map(
+                    ({ Key }) => Key
+                ).join(", ");
+
+                throw new Error(
+                    `Failed to delete objects from S3 bucket "${bucket}": ${failedKeys}`
+                );
+            }
+
+            return keys;
         },
 
         deleteFolder: async ({ prefix }) => {
@@ -116,10 +145,14 @@ export const createS3BucketService = (
             });
         },
 
-        createReadSignedUrl: async ({ key }) => {
+        createReadSignedUrl: async ({ key, responseContentDisposition }) => {
             const bucket = requireBucket();
 
-            const command = new GetObjectCommand({ Bucket: bucket, Key: key });
+            const command = new GetObjectCommand({
+                Bucket: bucket,
+                Key: key,
+                ResponseContentDisposition: responseContentDisposition,
+            });
 
             return getSignedUrl(awsS3Client, command, {
                 expiresIn: SIGNED_URL_EXPIRES_IN_SECONDS,

@@ -58,6 +58,53 @@ describe("s3Bucket.service - createS3BucketService", () => {
         });
     });
 
+    it("should delete multiple files by key in a single batch", async () => {
+        const { sendMock, client } = createS3ClientMock();
+
+        sendMock.mockResolvedValue({});
+
+        const s3BucketService = createS3BucketService(client, config);
+
+        const keys = ["data-rooms/1/a.pdf", "data-rooms/1/b.pdf"];
+        const deletedKeys = await s3BucketService.deleteFiles({ keys });
+
+        expect(deletedKeys).toEqual(keys);
+        expect(sendMock).toHaveBeenCalledOnce();
+
+        const command = sendMock.mock.calls[0][0];
+
+        expect(command).toBeInstanceOf(DeleteObjectsCommand);
+        expect(command.input).toMatchObject({
+            Bucket: "test-bucket",
+            Delete: { Objects: keys.map((key) => ({ Key: key })) },
+        });
+    });
+
+    it("should not call S3 when deleteFiles is given an empty key list", async () => {
+        const { sendMock, client } = createS3ClientMock();
+
+        const s3BucketService = createS3BucketService(client, config);
+
+        const deletedKeys = await s3BucketService.deleteFiles({ keys: [] });
+
+        expect(deletedKeys).toEqual([]);
+        expect(sendMock).not.toHaveBeenCalled();
+    });
+
+    it("should throw when deleteFiles reports per-object errors", async () => {
+        const { sendMock, client } = createS3ClientMock();
+
+        sendMock.mockResolvedValue({
+            Errors: [{ Key: "data-rooms/1/a.pdf", Message: "AccessDenied" }],
+        });
+
+        const s3BucketService = createS3BucketService(client, config);
+
+        await expect(
+            s3BucketService.deleteFiles({ keys: ["data-rooms/1/a.pdf"] })
+        ).rejects.toThrow("data-rooms/1/a.pdf");
+    });
+
     it("should throw when the bucket name is not configured", async () => {
         const { sendMock, client } = createS3ClientMock();
 

@@ -1,12 +1,5 @@
-<div align="center">
- <img width="524" src="https://github.com/user-attachments/assets/d460817f-058a-4d3f-b75c-b897c954ecdc" />
-</div>
+# Data Room
 
-# [Lumitech](https://lumitech.co/) Node.js Fastify Template 
-Welcome to the Lumitech Node.js Fastify Template. This template provides a well-organized starting point for building back-end applications in Node.js, featuring Swagger-based API documentation, ready-to-use Docker configuration, and Awilix for dependency injection. With well-defined architectural patterns, it helps ensure the code remains maintainable, scalable, and testable, especially as the application grows.
-
-### About Lumitech
-[Lumitech](https://lumitech.co/) is a custom software development company providing professional services worldwide. We partner with technology businesses globally helping them to build successful engineering teams and create innovative software products. We’re a global team of software engineers, AI and ML specialists, product managers, and technology experts who have achieved a 600% growth rate since 2022. When a rocket launches toward the moon, it doesn’t stop halfway. Neither do we.
 
 ## 🛠️ Technology Stack:
 - [TypeScript](https://www.typescriptlang.org/) - programming language;
@@ -215,22 +208,6 @@ To visualize your ER diagram:
 2. Paste the contents of schema.dbml into the editor
 3. The diagram will be rendered automatically
 
-### 📜 Commits Format
-
-We use Commitlint to ensure that commit messages adhere to the conventional commit format. This standardizes the commit history and simplifies changelog generation.
-
-The basic format is:
-```sh
-type(scope?): subject
-```
-
-Examples:
-- `chore: update dependencies`
-- `fix(message): correct API response error`
-- `feat(auth): add JWT authentication`
-
-A more detailed description you can see in [Conventional Commits documentation](https://www.conventionalcommits.org/en/v1.0.0/#examples).
-
 ## 📁 Project Structure
 The project is organized into several parts to promote a modular design and separation of concerns:
 
@@ -335,7 +312,3 @@ This directory contains all test files organized to mirror the structure of the 
 │               └── ...
 └── tsconfig.json
 ```
-
-## ✨ Inspired by
-- [Fastify example](https://github.com/delvedor/fastify-example) - a brief example of core Fastify features;
-- [Guide to plugins](https://fastify.dev/docs/latest/Guides/Plugins-Guide/) - encapsulation and decorators in Fastify.

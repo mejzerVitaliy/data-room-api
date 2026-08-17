@@ -14,14 +14,10 @@ const configureEnv = async (fastify: FastifyInstance) => {
             .prop("DATABASE_URL", S.string())
             .prop("APPLICATION_SECRET", S.string())
             .prop("APPLICATION_URL", S.string())
+            .prop("FRONTEND_URL", S.string())
             .prop("PORT", S.number())
             .prop("DOCS_PASSWORD", S.string())
             .prop("HOST", S.string().default("0.0.0.0"))
-            .prop("GCP_PROJECT_ID", S.string())
-            .prop("GCP_CLIENT_EMAIL", S.string())
-            .prop("GCP_PRIVATE_KEY", S.string())
-            .prop("GCP_BUCKET_NAME", S.string())
-            .prop("GCP_STORAGE_API_ENDPOINT", S.string())
             .prop("AWS_REGION", S.string())
             .prop("AWS_ACCESS_KEY_ID", S.string())
             .prop("AWS_SECRET_ACCESS_KEY", S.string())
@@ -32,6 +28,7 @@ const configureEnv = async (fastify: FastifyInstance) => {
                 "DATABASE_URL",
                 "APPLICATION_SECRET",
                 "APPLICATION_URL",
+                "FRONTEND_URL",
                 "PORT",
             ])
             .valueOf(),

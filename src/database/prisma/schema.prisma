@@ -10,7 +10,7 @@ generator dbml {
   provider            = "prisma-dbml-generator"
   output              = "../dbml"
   outputName          = "schema.dbml"
-  projectName         = "Project Name"
+  projectName         = "Data Room"
   projectDatabaseType = "PostgreSQL"
   projectNote         = "ER Diagram"
 }
@@ -20,14 +20,120 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Message {
-  id        Int      @id @default(autoincrement())
+model User {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dataRooms     DataRoom[]
+  uploadedFiles File[]
+  shares        Share[]      @relation("ShareOwner")
+  shareGrants   ShareGrant[] @relation("ShareGranteeUser")
+
+  @@map("users")
+}
+
+model DataRoom {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerId   String   @map("owner_id") @db.Uuid
+  name      String
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  text String
+  owner   User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  folders Folder[]
+  files   File[]
 
-  /// [MessageMeta]
-  meta Json?
+  @@unique([ownerId, name])
+  @@map("data_rooms")
+}
 
-  @@map("messages")
+model Folder {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dataRoomId String   @map("data_room_id") @db.Uuid
+  parentId   String?  @map("parent_id") @db.Uuid
+  name       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  dataRoom DataRoom @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
+  parent   Folder?  @relation("FolderToFolder", fields: [parentId], references: [id], onDelete: Cascade)
+  children Folder[] @relation("FolderToFolder")
+  files    File[]
+
+  @@unique([dataRoomId, parentId, name])
+  @@index([dataRoomId, parentId])
+  @@map("folders")
+}
+
+model File {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dataRoomId   String   @map("data_room_id") @db.Uuid
+  folderId     String?  @map("folder_id") @db.Uuid
+  name         String
+  mimeType     String   @map("mime_type")
+  sizeBytes    Int      @map("size_bytes")
+  storageKey   String   @map("storage_key")
+  uploadedById String   @map("uploaded_by_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dataRoom   DataRoom @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
+  folder     Folder?  @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  uploadedBy User     @relation(fields: [uploadedById], references: [id])
+
+  @@unique([dataRoomId, folderId, name])
+  @@index([dataRoomId, folderId])
+  @@map("files")
+}
+
+enum ShareResourceType {
+  DATA_ROOM
+  FOLDER
+  FILE
+}
+
+enum ShareMode {
+  PUBLIC
+  PERMISSIONED
+}
+
+enum ShareGranteeRole {
+  VIEWER
+}
+
+model Share {
+  id           String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceType ShareResourceType @map("resource_type")
+  resourceId   String            @map("resource_id") @db.Uuid
+  dataRoomId   String            @map("data_room_id") @db.Uuid
+  ownerId      String            @map("owner_id") @db.Uuid
+  mode         ShareMode
+  publicToken  String?           @unique @map("public_token")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  revokedAt    DateTime?         @map("revoked_at")
+
+  owner  User         @relation("ShareOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  grants ShareGrant[]
+
+  @@index([dataRoomId, resourceType, resourceId])
+  @@map("shares")
+}
+
+model ShareGrant {
+  id            String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shareId       String           @map("share_id") @db.Uuid
+  granteeEmail  String           @map("grantee_email")
+  granteeUserId String?          @map("grantee_user_id") @db.Uuid
+  role          ShareGranteeRole @default(VIEWER)
+  createdAt     DateTime         @default(now()) @map("created_at")
+
+  share       Share @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  granteeUser User? @relation("ShareGranteeUser", fields: [granteeUserId], references: [id], onDelete: SetNull)
+
+  @@unique([shareId, granteeEmail])
+  @@map("share_grants")
 }

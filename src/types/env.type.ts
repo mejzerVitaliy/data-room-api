@@ -5,12 +5,8 @@ export type EnvConfig = {
     PORT: number;
     APPLICATION_SECRET: string;
     APPLICATION_URL: string;
+    FRONTEND_URL: string;
     DOCS_PASSWORD: string | undefined;
-    GCP_PROJECT_ID: string | undefined;
-    GCP_CLIENT_EMAIL: string | undefined;
-    GCP_PRIVATE_KEY: string | undefined;
-    GCP_BUCKET_NAME: string | undefined;
-    GCP_STORAGE_API_ENDPOINT: string | undefined;
     AWS_REGION: string | undefined;
     AWS_ACCESS_KEY_ID: string | undefined;
     AWS_SECRET_ACCESS_KEY: string | undefined;

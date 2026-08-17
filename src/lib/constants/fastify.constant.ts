@@ -4,8 +4,9 @@
 export enum FastifyPlugin {
     Prisma = "prisma",
     Env = "env",
+    Cookie = "cookie",
     Jwt = "jwt",
+    Authenticate = "authenticate",
     Awilix = "awilix",
-    GcpStorage = "gcpStorage",
     AwsS3 = "awsS3",
 }

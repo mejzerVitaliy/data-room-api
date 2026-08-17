@@ -13,6 +13,7 @@ const configureAwsS3 = async (fastify: FastifyInstance) => {
 
     const s3Client = new S3Client({
         region: AWS_REGION,
+        requestChecksumCalculation: "WHEN_REQUIRED",
         ...(AWS_S3_ENDPOINT && {
             endpoint: AWS_S3_ENDPOINT,
             forcePathStyle: true,
