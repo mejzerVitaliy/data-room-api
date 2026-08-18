@@ -15,7 +15,6 @@ import {
 import {
     AUTH_ACCESS_COOKIE_NAME,
     AUTH_REFRESH_COOKIE_NAME,
-    AUTH_REFRESH_COOKIE_PATH,
 } from "./auth.constant.js";
 
 export type AuthHandler = {
@@ -126,12 +125,18 @@ export const createHandler = (authService: AuthService): AuthHandler => {
             return reply.send(response);
         },
 
-        logout: async (_request, reply) => {
-            reply.clearCookie(AUTH_ACCESS_COOKIE_NAME, { path: "/" });
+        logout: async (request, reply) => {
+            const { config } = request.server;
 
-            reply.clearCookie(AUTH_REFRESH_COOKIE_NAME, {
-                path: AUTH_REFRESH_COOKIE_PATH,
-            });
+            reply.clearCookie(
+                AUTH_ACCESS_COOKIE_NAME,
+                buildAccessCookieOptions(config)
+            );
+
+            reply.clearCookie(
+                AUTH_REFRESH_COOKIE_NAME,
+                buildRefreshCookieOptions(config)
+            );
 
             return reply.send({ message: RESPONSE_MESSAGES.auth.loggedOut });
         },
